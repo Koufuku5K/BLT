@@ -4,20 +4,18 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float speed;
-    [SerializeField] private float rotationSpeed;
-    [SerializeField] private float jumpSpeed;
-    [SerializeField] private float ySpeed; // Gravity
-    private float originalStepOffset;
-
+    [SerializeField] private float speed = 6f;
+    [SerializeField] private float rotationSpeed = 720f;
+    [SerializeField] private float jumpForce = 5f;
     [SerializeField] private Transform cameraTransform;
 
-    private CharacterController characterController;
+    private Rigidbody rb;
+    private bool jumpRequest;
+    public bool isGrounded;
     
     void Start()
     {
-        characterController = GetComponent<CharacterController>();
-        originalStepOffset = characterController.stepOffset;
+        rb = GetComponent<Rigidbody>();
     }
 
     void Update()
@@ -26,37 +24,33 @@ public class PlayerMovement : MonoBehaviour
         float verticalInput = Input.GetAxis("Vertical");
 
         Vector3 moveDir = new Vector3(horizontalInput, 0, verticalInput);
-        float magnitude = Mathf.Clamp01(moveDir.magnitude) * speed;
         moveDir = Quaternion.AngleAxis(cameraTransform.rotation.eulerAngles.y, Vector3.up) * moveDir;
         moveDir.Normalize();
 
-        // Jump Mechanics
-        ySpeed += Physics.gravity.y * Time.deltaTime; // Getting physics gravity value and adding this amount to ySpeed every second
+        Vector3 velocity = moveDir * speed;
+        velocity.y = rb.velocity.y;
 
-        if (characterController.isGrounded)
-        {
-            characterController.stepOffset = originalStepOffset;
-            ySpeed = -0.5f;
-            if (Input.GetButtonDown("Jump"))
-            {
-                ySpeed = jumpSpeed;
-            }
-        }
-        else
-        {
-            characterController.stepOffset = 0;
-        }
-
-        Vector3 velocity = moveDir * magnitude;
-        velocity.y = ySpeed;
-
-        characterController.Move(velocity * Time.deltaTime);
+        rb.velocity = velocity;
 
         if (moveDir != Vector3.zero)
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDir, Vector3.up);
-
             transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, rotationSpeed * Time.deltaTime);
+        }
+
+        // Jump Mechanics
+        if (isGrounded && Input.GetButtonDown("Jump"))
+        {
+            jumpRequest = true;
+        }
+    }
+
+    void FixedUpdate()
+    {
+        if (jumpRequest)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            jumpRequest = false;
         }
     }
 
