@@ -6,8 +6,19 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float speed;
     [SerializeField] private float rotationSpeed;
+    [SerializeField] private float jumpSpeed;
+    [SerializeField] private float ySpeed; // Gravity
+    private float originalStepOffset;
 
     [SerializeField] private Transform cameraTransform;
+
+    private CharacterController characterController;
+    
+    void Start()
+    {
+        characterController = GetComponent<CharacterController>();
+        originalStepOffset = characterController.stepOffset;
+    }
 
     void Update()
     {
@@ -15,10 +26,31 @@ public class PlayerMovement : MonoBehaviour
         float verticalInput = Input.GetAxis("Vertical");
 
         Vector3 moveDir = new Vector3(horizontalInput, 0, verticalInput);
+        float magnitude = Mathf.Clamp01(moveDir.magnitude) * speed;
         moveDir = Quaternion.AngleAxis(cameraTransform.rotation.eulerAngles.y, Vector3.up) * moveDir;
         moveDir.Normalize();
 
-        transform.Translate(moveDir * speed * Time.deltaTime, Space.World);
+        // Jump Mechanics
+        ySpeed += Physics.gravity.y * Time.deltaTime; // Getting physics gravity value and adding this amount to ySpeed every second
+
+        if (characterController.isGrounded)
+        {
+            characterController.stepOffset = originalStepOffset;
+            ySpeed = -0.5f;
+            if (Input.GetButtonDown("Jump"))
+            {
+                ySpeed = jumpSpeed;
+            }
+        }
+        else
+        {
+            characterController.stepOffset = 0;
+        }
+
+        Vector3 velocity = moveDir * magnitude;
+        velocity.y = ySpeed;
+
+        characterController.Move(velocity * Time.deltaTime);
 
         if (moveDir != Vector3.zero)
         {
