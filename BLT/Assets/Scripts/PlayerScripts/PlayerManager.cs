@@ -39,6 +39,11 @@ public class PlayerManager : MonoBehaviour
         {
             pm.isGrounded = true;
         }
+        else if (collision.gameObject.CompareTag("Water"))
+        {
+            Die();
+            Respawn();
+        }
     }
 
     private void OnCollisionExit(Collision collision)
@@ -46,16 +51,6 @@ public class PlayerManager : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             pm.isGrounded = false;
-        }
-    }
-
-    // If player falls into the water, player dies
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Water"))
-        {
-            Die();
-            Respawn();
         }
     }
 }
