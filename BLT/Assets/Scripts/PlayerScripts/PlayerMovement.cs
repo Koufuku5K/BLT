@@ -20,6 +20,15 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // Jump Mechanics
+        if (isGrounded && Input.GetButtonDown("Jump"))
+        {
+            jumpRequest = true;
+        }
+    }
+
+    void FixedUpdate()
+    {
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
@@ -38,15 +47,6 @@ public class PlayerMovement : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(transform.rotation, toRotation, rotationSpeed * Time.deltaTime);
         }
 
-        // Jump Mechanics
-        if (isGrounded && Input.GetButtonDown("Jump"))
-        {
-            jumpRequest = true;
-        }
-    }
-
-    void FixedUpdate()
-    {
         if (jumpRequest)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);

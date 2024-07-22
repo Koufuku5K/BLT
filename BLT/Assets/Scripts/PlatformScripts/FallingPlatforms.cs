@@ -12,13 +12,9 @@ public class FallingPlatforms : MonoBehaviour
     private Vector3 originalPosition;
     private bool isShaking = false;
 
-    public GameObject reactivatePlatform;
-    private ReactivatePlatform rp;
-
     void Start()
     {
         originalPosition = transform.localPosition;
-        rp = playerMovement.GetComponent<ReactivatePlatform>();
     }
     
     // Update is called once per frame
@@ -58,7 +54,5 @@ public class FallingPlatforms : MonoBehaviour
         yield return new WaitForSeconds(breakDelay - shakeDuration);
 
         gameObject.SetActive(false);
-
-        rp.Instance.ReactivatePlatform(gameObject, reactivateDelay);
     }
 }
