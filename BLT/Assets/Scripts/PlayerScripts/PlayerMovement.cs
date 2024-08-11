@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float speed = 6f;
+    [SerializeField] private float walkSpeed = 8f;
+    [SerializeField] private float sprintSpeed = 10f;
     [SerializeField] private float rotationSpeed = 720f;
     [SerializeField] private float jumpForce = 5f;
     [SerializeField] private Transform cameraTransform;
@@ -12,7 +13,8 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
     private bool jumpRequest;
     public bool isGrounded;
-    
+    private bool isSprinting;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -25,10 +27,23 @@ public class PlayerMovement : MonoBehaviour
         {
             jumpRequest = true;
         }
+
+        // Sprint Mechanics
+        if (isGrounded && Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            // Toggle Sprint
+            isSprinting = !isSprinting;
+        }
+
+        if (Input.GetAxis("Horizontal") == 0 && Input.GetAxis("Vertical") == 0)
+        {
+            isSprinting = false;
+        }
     }
 
     void FixedUpdate()
     {
+        float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
@@ -36,7 +51,7 @@ public class PlayerMovement : MonoBehaviour
         moveDir = Quaternion.AngleAxis(cameraTransform.rotation.eulerAngles.y, Vector3.up) * moveDir;
         moveDir.Normalize();
 
-        Vector3 velocity = moveDir * speed;
+        Vector3 velocity = moveDir * currentSpeed;
         velocity.y = rb.velocity.y;
 
         rb.velocity = velocity;
@@ -49,6 +64,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (jumpRequest)
         {
+            isGrounded = false;
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             jumpRequest = false;
         }
@@ -63,6 +79,17 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             Cursor.lockState = CursorLockMode.None; 
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            if (Vector3.Dot(collision.contacts[0].normal, Vector3.up) > 0.7f)
+            {
+                isGrounded = true;
+            }
         }
     }
 }

@@ -5,8 +5,8 @@ using UnityEngine;
 public class FallingPlatforms : MonoBehaviour
 {
     private float shakeDuration = 1f;
-    private float shakeMagnitude = 0.1f;
-    private float breakDelay = 2f;
+    private float shakeMagnitude = 0.3f;
+    private float breakDelay = 0.5f;
     private float reactivateDelay = 2f;
 
     private Vector3 originalPosition;
